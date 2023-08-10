@@ -1,12 +1,11 @@
+use crate::reservation::Reservation;
 use anyhow::{Context, Result};
-use chrono::NaiveDate;
 use date_time_parser::DateParser;
 use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::fmt::{Display, Formatter};
 use std::io::Read;
-use string_builder::Builder;
 
 pub struct ParsioClient {
     api_key: String,
@@ -70,35 +69,6 @@ pub struct ParsioDoc {
     received_at_datetime: String,
 }
 
-impl ParsioDoc {
-    pub fn get_title(&self) -> Result<String> {
-        let check_in = self.get_check_in()?.format("%-d. %b").to_string();
-
-        Ok(format!("{} har booket fra {}", self.guest_name, check_in))
-    }
-
-    pub fn get_description(&self) -> Result<String> {
-        let mut builder = Builder::default();
-        builder.append(format!("- **Bosted**: {}\n", &self.guest_location));
-        builder.append(format!("- **Innsjekk**: {}\n", &self.check_in));
-        builder.append(format!("- **Utsjekk**: {}\n", &self.checkout));
-        builder.append(format!("- **Gjester**: {}\n", &self.number_of_guests));
-        builder.append(format!("- **Payout**: {}\n", &self.host_payout));
-        builder.append(format!("- **Confirmation**: {}\n", &self.confirmation_code));
-        Ok(builder.string()?)
-    }
-
-    pub fn get_check_in(&self) -> Result<NaiveDate> {
-        let check_in = DateParser::parse(self.check_in.as_str());
-        check_in.context("Could not parse a date")
-    }
-
-    pub fn get_checkout(&self) -> Result<NaiveDate> {
-        let check_out = DateParser::parse(self.checkout.as_str());
-        check_out.context("Could not parse a date")
-    }
-}
-
 impl Display for ParsioDoc {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -106,5 +76,28 @@ impl Display for ParsioDoc {
             "{} has booked {} to {} for {}. Payout {}",
             self.guest_name, self.check_in, self.checkout, self.number_of_guests, self.host_payout
         )
+    }
+}
+
+impl TryInto<Reservation> for ParsioDoc {
+    type Error = anyhow::Error;
+
+    fn try_into(self) -> std::result::Result<Reservation, Self::Error> {
+        let check_in =
+            DateParser::parse(self.check_in.as_str()).context("Could not parse a date")?;
+        let checkout =
+            DateParser::parse(self.checkout.as_str()).context("Could not parse a date")?;
+
+        Ok(Reservation {
+            guest: self.guest_name,
+            origin: self.guest_location,
+            number_of_guests: self.number_of_guests,
+            check_in,
+            checkout,
+            comment: self.booking_comment,
+            guest_paid: self.guest_paid_total,
+            host_payout: self.host_payout,
+            confirmation_code: self.confirmation_code,
+        })
     }
 }
