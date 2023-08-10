@@ -1,6 +1,7 @@
 use crate::parsio::ParsioClient;
 use crate::todoist::{TodoistClient, TodoistTask};
 use anyhow::Result;
+use chrono::Days;
 use std::env;
 
 mod parsio;
@@ -19,11 +20,12 @@ fn main() -> Result<()> {
         let task = TodoistTask::new(
             &None,
             &todoist_project_id,
-            doc.get_title().as_str(),
-            None,
+            doc.get_title()?.as_str(),
+            doc.get_checkout()?.checked_add_days(Days::new(3)),
             doc.get_description().ok(),
             None,
         );
+
         let response = todoist.post_task(task)?;
         if let Some(task_id) = response.id {
             println!(" - taskId={task_id}")
