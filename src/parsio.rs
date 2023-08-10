@@ -1,10 +1,10 @@
-use std::env;
 use anyhow::Result;
 use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
+use std::env;
 use std::fmt::{Display, Formatter};
 use std::io::Read;
-use std::str::FromStr;
+use string_builder::Builder;
 
 pub struct ParsioClient {
     api_key: String,
@@ -12,11 +12,10 @@ pub struct ParsioClient {
 }
 
 impl ParsioClient {
-
     pub fn new() -> Self {
         ParsioClient {
             api_key: env::var("PARSIO_API_KEY").expect("PARSIO_API_KEY is not set"),
-            mailbox_id: env::var("PARSIO_MAILBOX_ID").expect("PARSIO_MAILBOX_ID is not set")
+            mailbox_id: env::var("PARSIO_MAILBOX_ID").expect("PARSIO_MAILBOX_ID is not set"),
         }
     }
 
@@ -37,14 +36,13 @@ impl ParsioClient {
 
         Ok(response.docs)
     }
-
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ParsioResponse {
     limit: u64,
     page: u64,
-    pub docs: Vec<ParsioDoc>
+    pub docs: Vec<ParsioDoc>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -70,8 +68,28 @@ pub struct ParsioDoc {
     received_at_datetime: String,
 }
 
+impl ParsioDoc {
+    pub fn get_title(&self) -> String {
+        format!("{} har booket fra {}", self.guest_name, self.check_in)
+    }
+
+    pub fn get_description(&self) -> Result<String> {
+        let mut builder = Builder::default();
+        builder.append(format!("- **Bosted**: {}\n", &self.guest_location));
+        builder.append(format!("- **Innsjekk**: {}\n", &self.check_in));
+        builder.append(format!("- **Utsjekk**: {}\n", &self.checkout));
+        builder.append(format!("- **Gjester**: {}\n", &self.number_of_guests));
+        builder.append(format!("- **Payout**: {}\n", &self.host_payout));
+        Ok(builder.string()?)
+    }
+}
+
 impl Display for ParsioDoc {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} has booked {} to {} for {}. Payout {}", self.guest_name, self.check_in, self.checkout, self.number_of_guests, self.host_payout)
+        write!(
+            f,
+            "{} has booked {} to {} for {}. Payout {}",
+            self.guest_name, self.check_in, self.checkout, self.number_of_guests, self.host_payout
+        )
     }
 }
