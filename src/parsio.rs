@@ -84,6 +84,7 @@ impl ParsioDoc {
         builder.append(format!("- **Utsjekk**: {}\n", &self.checkout));
         builder.append(format!("- **Gjester**: {}\n", &self.number_of_guests));
         builder.append(format!("- **Payout**: {}\n", &self.host_payout));
+        builder.append(format!("- **Confirmation**: {}\n", &self.confirmation_code));
         Ok(builder.string()?)
     }
 
