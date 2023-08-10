@@ -4,7 +4,7 @@ use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use std::io::Read;
-use std::str::FromStr;
+use string_builder::Builder;
 
 pub struct ParsioClient {
     api_key: String,
@@ -68,6 +68,24 @@ pub struct ParsioDoc {
     #[serde(rename = "Host Payout Total")]
     host_payout: String,
     received_at_datetime: String,
+}
+
+impl ParsioDoc {
+
+    pub fn get_title(&self) -> String {
+        format!("{} har booket fra {}", self.guest_name, self.check_in)
+    }
+
+    pub fn get_description(&self) -> Result<String> {
+        let mut builder = Builder::default();
+        builder.append(format!("- **Bosted**: {}\n", &self.guest_location));
+        builder.append(format!("- **Innsjekk**: {}\n", &self.check_in));
+        builder.append(format!("- **Utsjekk**: {}\n", &self.checkout));
+        builder.append(format!("- **Gjester**: {}\n", &self.number_of_guests));
+        builder.append(format!("- **Payout**: {}\n", &self.host_payout));
+        Ok(builder.string()?)
+    }
+
 }
 
 impl Display for ParsioDoc {
