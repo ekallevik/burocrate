@@ -1,5 +1,8 @@
-use std::env;
+use chrono::NaiveDate;
 use reqwest::blocking::Client;
+use serde::{Deserialize, Serialize};
+use std::env;
+use std::fmt::{Display, Formatter};
 use std::io::Read;
 
 pub struct TodoistClient {
@@ -31,10 +34,6 @@ impl TodoistClient {
         Ok(task)
     }
 }
-
-use std::fmt::{Display, Formatter};
-use serde::{Deserialize, Serialize};
-use chrono::NaiveDate;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TodoistTask {

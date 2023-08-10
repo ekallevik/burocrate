@@ -1,13 +1,12 @@
-use std::env;
-use anyhow::Result;
 use crate::parsio::ParsioClient;
-use crate::todoist::{TodoistTask, TodoistClient};
+use crate::todoist::{TodoistClient, TodoistTask};
+use anyhow::Result;
+use std::env;
 
 mod parsio;
 mod todoist;
 
 fn main() -> Result<()> {
-
     let todoist = TodoistClient::new();
     let todoist_project_id = env::var("TODOIST_PROJECT_ID").expect("TODOIST_PROJECT_ID is not set");
     let parsio = ParsioClient::new();
@@ -26,8 +25,8 @@ fn main() -> Result<()> {
             None,
         );
         let response = todoist.post_task(task)?;
-        if let Some(taskId) = response.id {
-            println!(" - taskId={taskId}")
+        if let Some(task_id) = response.id {
+            println!(" - taskId={task_id}")
         }
     }
 
