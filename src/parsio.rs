@@ -1,4 +1,6 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
+use chrono::NaiveDate;
+use date_time_parser::DateParser;
 use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 use std::env;
@@ -69,8 +71,10 @@ pub struct ParsioDoc {
 }
 
 impl ParsioDoc {
-    pub fn get_title(&self) -> String {
-        format!("{} har booket fra {}", self.guest_name, self.check_in)
+    pub fn get_title(&self) -> Result<String> {
+        let check_in = self.get_check_in()?.format("%-d. %b").to_string();
+
+        Ok(format!("{} har booket fra {}", self.guest_name, check_in))
     }
 
     pub fn get_description(&self) -> Result<String> {
@@ -80,7 +84,18 @@ impl ParsioDoc {
         builder.append(format!("- **Utsjekk**: {}\n", &self.checkout));
         builder.append(format!("- **Gjester**: {}\n", &self.number_of_guests));
         builder.append(format!("- **Payout**: {}\n", &self.host_payout));
+        builder.append(format!("- **Confirmation**: {}\n", &self.confirmation_code));
         Ok(builder.string()?)
+    }
+
+    pub fn get_check_in(&self) -> Result<NaiveDate> {
+        let check_in = DateParser::parse(self.check_in.as_str());
+        check_in.context("Could not parse a date")
+    }
+
+    pub fn get_checkout(&self) -> Result<NaiveDate> {
+        let check_out = DateParser::parse(self.checkout.as_str());
+        check_out.context("Could not parse a date")
     }
 }
 
