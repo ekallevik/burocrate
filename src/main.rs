@@ -36,13 +36,15 @@ fn run_process() -> Result<()> {
     let todoist_project_id = env::var("TODOIST_PROJECT_ID").expect("TODOIST_PROJECT_ID is not set");
     let parsio = ParsioClient::new();
 
-    let docs = parsio.get_mailbox()?;
+    let reservations = parsio
+        .get_mailbox()?
+        .into_iter()
+        .map(|doc| doc.try_into().unwrap())
+        .filter(|res: &Reservation| res.check_in > Utc::now().date_naive())
+        .collect::<Vec<_>>();
 
-    println!("Got {} reservations", docs.len());
-    for doc in docs {
-        let res: Reservation = doc.try_into()?;
-        println!("{res}");
-
+    println!("Got {} reservations", reservations.len());
+    for res in reservations {
         let description = res.get_description()?;
         let parent_task = Task::new(
             &format!("Booking fra {}", res.check_in),
