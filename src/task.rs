@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use crate::reservation::Reservation;
 use crate::todoist::TodoistTask;
 use chrono::{Days, NaiveDate, Utc};
@@ -7,6 +8,15 @@ pub struct Task {
     description: String,
     due_date: RelativeDate,
     assigned_to: Option<String>,
+}
+
+impl Display for Task {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match &self.assigned_to {
+            None => write!(f, "Task: '{}' due on {}", self.name, self.due_date),
+            Some(assignee) => write!(f, "Task: '{}' due on {} and assigned to {}", self.name, self.due_date, assignee),
+        }
+    }
 }
 
 impl Task {
@@ -58,6 +68,18 @@ impl RelativeDate {
             RelativeDate::AfterCheckIn(days) => reservation.check_in.checked_add_days(*days),
             RelativeDate::BeforeCheckout(days) => reservation.checkout.checked_sub_days(*days),
             RelativeDate::AfterCheckout(days) => reservation.checkout.checked_add_days(*days),
+        }
+    }
+}
+
+impl Display for RelativeDate {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            RelativeDate::Immediately => write!(f, "immediately"),
+            RelativeDate::BeforeCheckIn(d) => write!(f, "{:?} before check-in", d),
+            RelativeDate::AfterCheckIn(d) => write!(f, "{:?} after check-in", d),
+            RelativeDate::BeforeCheckout(d) => write!(f, "{:?} before checkout", d),
+            RelativeDate::AfterCheckout(d) => write!(f, "{:?} after checkout", d),
         }
     }
 }
