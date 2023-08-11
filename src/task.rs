@@ -48,6 +48,7 @@ impl Task {
             Some(self.description.clone()),
             None,
             self.assigned_to.clone(),
+            vec!["airbnb".to_string()]
         )
     }
 }
