@@ -1,12 +1,12 @@
 use crate::parsio::ParsioClient;
-use crate::reservation::Reservation;
 use crate::task::{RelativeDate, Task};
 use crate::todoist::TodoistClient;
 use anyhow::{bail, Result};
 use chrono::{Days, Utc};
-use std::{env, thread};
-use std::time::Duration;
 use clokwerk::{Job, Scheduler, TimeUnits};
+use std::time::Duration;
+use std::{env, thread};
+use crate::reservation::Reservation;
 
 mod parsio;
 mod reservation;
@@ -16,12 +16,10 @@ mod todoist;
 fn main() {
 
     let mut scheduler = Scheduler::new();
-    scheduler
-        .every(15.minutes())
-        .run(|| {
-            println!("\n\n --- Time: {} ---", Utc::now());
-            run_process().unwrap();
-        });
+    scheduler.every(15.minutes()).run(|| {
+        println!("\n\n --- Time: {} ---", Utc::now());
+        run_process().unwrap();
+    });
 
     // run the process forever
     loop {
