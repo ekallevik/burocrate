@@ -59,7 +59,7 @@ impl Display for TodoistTask {
 
 impl TodoistTask {
     pub fn new(
-        parent_id: &Option<String>,
+        parent_id: Option<&String>,
         project_id: &str,
         content: &str,
         due_date: Option<NaiveDate>,
@@ -72,7 +72,7 @@ impl TodoistTask {
             description,
             priority,
             project_id: project_id.to_string(),
-            parent_id: parent_id.clone(),
+            parent_id: parent_id.cloned(),
             due_string: due_date.map(|d| d.format("%Y-%m-%d").to_string()),
         }
     }
