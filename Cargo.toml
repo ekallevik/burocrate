@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.71"
 chrono = { version = "0.4.26", features = ["serde"] }
+clokwerk = "0.4.0"
 date_time_parser = "0.2.0"
 reqwest = { version = "0.11.18", features = ["blocking", "json"] }
 serde = { version = "1.0.166", features=["derive"] }
