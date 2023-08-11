@@ -45,7 +45,7 @@ fn run_process() -> Result<()> {
     for res in reservations {
         let description = res.get_description()?;
         let parent_task = Task::new(
-            &format!("Booking fra {}", res.check_in),
+            &format!("Booking fra {}", res.check_in.format("%-d. %b")),
             &description,
             RelativeDate::AfterCheckout(Days::new(3)),
             None,
