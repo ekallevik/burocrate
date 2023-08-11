@@ -16,6 +16,16 @@ fn main() -> Result<()> {
     let todoist_project_id = env::var("TODOIST_PROJECT_ID").expect("TODOIST_PROJECT_ID is not set");
     let parsio = ParsioClient::new();
 
+    run_process(todoist, &todoist_project_id, parsio)?;
+
+    Ok(())
+}
+
+fn run_process(
+    todoist: TodoistClient,
+    todoist_project_id: &String,
+    parsio: ParsioClient,
+) -> Result<()> {
     let docs = parsio.get_mailbox()?;
 
     println!("Got {} reservations", docs.len());
@@ -29,6 +39,7 @@ fn main() -> Result<()> {
             &description,
             RelativeDate::AfterCheckout(Days::new(3)),
         );
+        let sub_tasks = get_sub_tasks(&description);
 
         let todoist_parent_task = parent_task.to_todoist(&res, None, &todoist_project_id);
 
@@ -38,55 +49,56 @@ fn main() -> Result<()> {
             Some(id) => id,
         };
 
-        let sub_tasks = vec![
-            Task::new(
-                "Bestill vaskehjelp",
-                &description,
-                RelativeDate::Immediately,
-            ),
-            Task::new(
-                "Fiks egen overnatting Even",
-                &description,
-                RelativeDate::Immediately,
-            ),
-            Task::new(
-                "Fiks egen overnatting Kristin",
-                &description,
-                RelativeDate::Immediately,
-            ),
-            Task::new(
-                "Opprett dørkode",
-                &description,
-                RelativeDate::BeforeCheckIn(Days::new(3)),
-            ),
-            Task::new(
-                "Klargjør leiligheten",
-                &description,
-                RelativeDate::BeforeCheckIn(Days::new(1)),
-            ),
-            Task::new(
-                "Send velkomstmelding",
-                &description,
-                RelativeDate::BeforeCheckIn(Days::new(1)),
-            ),
-            Task::new(
-                "Slett dørkode",
-                &description,
-                RelativeDate::AfterCheckout(Days::new(2)),
-            ),
-            Task::new(
-                "Følg opp anmeldelse",
-                &description,
-                RelativeDate::AfterCheckout(Days::new(3)),
-            ),
-        ];
-
         for sub_task in sub_tasks {
             let todoist_sub_task =
                 sub_task.to_todoist(&res, Some(&todoist_parent_task_id), &todoist_project_id);
             todoist.post_task(todoist_sub_task)?;
         }
     }
-
     Ok(())
+}
+
+fn get_sub_tasks(description: &String) -> Vec<Task> {
+    vec![
+        Task::new(
+            "Bestill vaskehjelp",
+            &description,
+            RelativeDate::Immediately,
+        ),
+        Task::new(
+            "Fiks egen overnatting Even",
+            &description,
+            RelativeDate::Immediately,
+        ),
+        Task::new(
+            "Fiks egen overnatting Kristin",
+            &description,
+            RelativeDate::Immediately,
+        ),
+        Task::new(
+            "Opprett dørkode",
+            &description,
+            RelativeDate::BeforeCheckIn(Days::new(3)),
+        ),
+        Task::new(
+            "Klargjør leiligheten",
+            &description,
+            RelativeDate::BeforeCheckIn(Days::new(1)),
+        ),
+        Task::new(
+            "Send velkomstmelding",
+            &description,
+            RelativeDate::BeforeCheckIn(Days::new(1)),
+        ),
+        Task::new(
+            "Slett dørkode",
+            &description,
+            RelativeDate::AfterCheckout(Days::new(2)),
+        ),
+        Task::new(
+            "Følg opp anmeldelse",
+            &description,
+            RelativeDate::AfterCheckout(Days::new(3)),
+        ),
+    ]
 }
