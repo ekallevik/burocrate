@@ -48,6 +48,7 @@ fn run_process() -> Result<()> {
             &format!("Booking fra {}", res.check_in),
             &description,
             RelativeDate::AfterCheckout(Days::new(3)),
+            None,
         );
         let sub_tasks = get_sub_tasks(&description);
 
@@ -68,47 +69,58 @@ fn run_process() -> Result<()> {
     Ok(())
 }
 
-fn get_sub_tasks(description: &String) -> Vec<Task> {
+fn get_sub_tasks(description: &str) -> Vec<Task> {
+    let alice_id = env::var("TODOIST_ID_ALICE").expect("TODOIST_ID_ALICE is not set");
+    let bob_id = env::var("TODOIST_ID_BOB").expect("TODOIST_ID_BOB is not set");
+
     vec![
         Task::new(
             "Bestill vaskehjelp",
             &description,
             RelativeDate::Immediately,
+            None,
         ),
         Task::new(
-            "Fiks egen overnatting Even",
+            "Fiks egen overnatting",
             &description,
             RelativeDate::Immediately,
+            Some(alice_id),
         ),
         Task::new(
-            "Fiks egen overnatting Kristin",
+            "Fiks egen overnatting",
             &description,
             RelativeDate::Immediately,
+            Some(bob_id),
         ),
         Task::new(
             "Opprett dørkode",
             &description,
             RelativeDate::BeforeCheckIn(Days::new(3)),
+            None,
         ),
         Task::new(
             "Klargjør leiligheten",
             &description,
             RelativeDate::BeforeCheckIn(Days::new(1)),
+            None,
         ),
         Task::new(
             "Send velkomstmelding",
             &description,
             RelativeDate::BeforeCheckIn(Days::new(1)),
+            None,
         ),
         Task::new(
             "Slett dørkode",
             &description,
             RelativeDate::AfterCheckout(Days::new(2)),
+            None,
         ),
         Task::new(
             "Følg opp anmeldelse",
             &description,
             RelativeDate::AfterCheckout(Days::new(3)),
+            None,
         ),
     ]
 }

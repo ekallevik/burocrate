@@ -6,14 +6,21 @@ pub struct Task {
     name: String,
     description: String,
     due_date: RelativeDate,
+    assigned_to: Option<String>,
 }
 
 impl Task {
-    pub fn new(name: &str, description: &str, due_date: RelativeDate) -> Self {
+    pub fn new(
+        name: &str,
+        description: &str,
+        due_date: RelativeDate,
+        assigned_to: Option<String>,
+    ) -> Self {
         Task {
             name: name.to_string(),
             description: description.to_string(),
             due_date,
+            assigned_to,
         }
     }
 
@@ -30,6 +37,7 @@ impl Task {
             self.due_date.resolve(reservation),
             Some(self.description.clone()),
             None,
+            self.assigned_to.clone(),
         )
     }
 }
