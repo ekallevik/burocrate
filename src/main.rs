@@ -3,29 +3,39 @@ use crate::reservation::Reservation;
 use crate::task::{RelativeDate, Task};
 use crate::todoist::TodoistClient;
 use anyhow::{bail, Result};
-use chrono::Days;
-use std::env;
+use chrono::{Days, Utc};
+use std::{env, thread};
+use std::time::Duration;
+use clokwerk::{Job, Scheduler, TimeUnits};
 
 mod parsio;
 mod reservation;
 mod task;
 mod todoist;
 
-fn main() -> Result<()> {
+fn main() {
+
+    let mut scheduler = Scheduler::new();
+    scheduler
+        .every(15.minutes())
+        .run(|| {
+            println!("\n\n --- Time: {} ---", Utc::now());
+            run_process().unwrap();
+        });
+
+    // run the process forever
+    loop {
+        scheduler.run_pending();
+        thread::sleep(Duration::from_millis(10));
+    }
+}
+
+fn run_process() -> Result<()> {
+
     let todoist = TodoistClient::new();
     let todoist_project_id = env::var("TODOIST_PROJECT_ID").expect("TODOIST_PROJECT_ID is not set");
     let parsio = ParsioClient::new();
 
-    run_process(todoist, &todoist_project_id, parsio)?;
-
-    Ok(())
-}
-
-fn run_process(
-    todoist: TodoistClient,
-    todoist_project_id: &String,
-    parsio: ParsioClient,
-) -> Result<()> {
     let docs = parsio.get_mailbox()?;
 
     println!("Got {} reservations", docs.len());
