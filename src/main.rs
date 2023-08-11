@@ -1,12 +1,12 @@
 use crate::parsio::ParsioClient;
-use crate::reservation::Reservation;
 use crate::task::{RelativeDate, Task};
 use crate::todoist::TodoistClient;
 use anyhow::{bail, Result};
 use chrono::{Days, Utc};
-use std::{env, thread};
-use std::time::Duration;
 use clokwerk::{Job, Scheduler, TimeUnits};
+use std::time::Duration;
+use std::{env, thread};
+use crate::reservation::Reservation;
 
 mod parsio;
 mod reservation;
@@ -16,12 +16,10 @@ mod todoist;
 fn main() {
 
     let mut scheduler = Scheduler::new();
-    scheduler
-        .every(15.minutes())
-        .run(|| {
-            println!("\n\n --- Time: {} ---", Utc::now());
-            run_process().unwrap();
-        });
+    scheduler.every(15.minutes()).run(|| {
+        println!("\n\n --- Time: {} ---", Utc::now());
+        run_process().unwrap();
+    });
 
     // run the process forever
     loop {
@@ -36,18 +34,21 @@ fn run_process() -> Result<()> {
     let todoist_project_id = env::var("TODOIST_PROJECT_ID").expect("TODOIST_PROJECT_ID is not set");
     let parsio = ParsioClient::new();
 
-    let docs = parsio.get_mailbox()?;
+    let reservations = parsio
+        .get_mailbox()?
+        .into_iter()
+        .map(|doc| doc.try_into().unwrap())
+        .filter(|res: &Reservation| res.check_in > Utc::now().date_naive())
+        .collect::<Vec<_>>();
 
-    println!("Got {} reservations", docs.len());
-    for doc in docs {
-        let res: Reservation = doc.try_into()?;
-        println!("{res}");
-
+    println!("Got {} reservations", reservations.len());
+    for res in reservations {
         let description = res.get_description()?;
         let parent_task = Task::new(
-            &format!("Booking fra {}", res.check_in),
+            &format!("Booking fra {}", res.check_in.format("%-d. %b")),
             &description,
             RelativeDate::AfterCheckout(Days::new(3)),
+            None,
         );
         let sub_tasks = get_sub_tasks(&description);
 
@@ -68,47 +69,58 @@ fn run_process() -> Result<()> {
     Ok(())
 }
 
-fn get_sub_tasks(description: &String) -> Vec<Task> {
+fn get_sub_tasks(description: &str) -> Vec<Task> {
+    let alice_id = env::var("TODOIST_ID_ALICE").expect("TODOIST_ID_ALICE is not set");
+    let bob_id = env::var("TODOIST_ID_BOB").expect("TODOIST_ID_BOB is not set");
+
     vec![
         Task::new(
             "Bestill vaskehjelp",
             &description,
             RelativeDate::Immediately,
+            None,
         ),
         Task::new(
-            "Fiks egen overnatting Even",
+            "Fiks egen overnatting",
             &description,
             RelativeDate::Immediately,
+            Some(alice_id),
         ),
         Task::new(
-            "Fiks egen overnatting Kristin",
+            "Fiks egen overnatting",
             &description,
             RelativeDate::Immediately,
+            Some(bob_id),
         ),
         Task::new(
             "Opprett dørkode",
             &description,
             RelativeDate::BeforeCheckIn(Days::new(3)),
+            None,
         ),
         Task::new(
             "Klargjør leiligheten",
             &description,
             RelativeDate::BeforeCheckIn(Days::new(1)),
+            None,
         ),
         Task::new(
             "Send velkomstmelding",
             &description,
             RelativeDate::BeforeCheckIn(Days::new(1)),
+            None,
         ),
         Task::new(
             "Slett dørkode",
             &description,
             RelativeDate::AfterCheckout(Days::new(2)),
+            None,
         ),
         Task::new(
             "Følg opp anmeldelse",
             &description,
             RelativeDate::AfterCheckout(Days::new(3)),
+            None,
         ),
     ]
 }

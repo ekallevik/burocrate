@@ -44,6 +44,8 @@ pub struct TodoistTask {
     pub description: Option<String>,
     pub priority: Option<i32>,
     due_string: Option<String>,
+    assignee: Option<String>,
+    labels: Vec<String>,
 }
 
 impl Display for TodoistTask {
@@ -65,6 +67,8 @@ impl TodoistTask {
         due_date: Option<NaiveDate>,
         description: Option<String>,
         priority: Option<i32>,
+        assignee: Option<String>,
+        labels: Vec<String>
     ) -> TodoistTask {
         TodoistTask {
             id: None,
@@ -74,6 +78,8 @@ impl TodoistTask {
             project_id: project_id.to_string(),
             parent_id: parent_id.cloned(),
             due_string: due_date.map(|d| d.format("%Y-%m-%d").to_string()),
+            assignee,
+            labels,
         }
     }
 }
