@@ -9,6 +9,7 @@ pub struct Task {
     description: String,
     due_date: RelativeDate,
     assigned_to: Option<String>,
+    labels: Vec<String>,
 }
 
 impl Display for Task {
@@ -30,6 +31,7 @@ impl Task {
         reservation: &Reservation,
         due_date: RelativeDate,
         assigned_to: Option<String>,
+        label: Option<&str>,
         appendix: bool,
     ) -> Result<Self> {
         let processed_titled = match appendix {
@@ -37,11 +39,18 @@ impl Task {
             true => format!("{} - {}", title, reservation.guest),
         };
 
+        let labels = vec![Some("airbnb"), label]
+            .into_iter()
+            .flatten()
+            .map(|a| a.to_string())
+            .collect::<Vec<_>>();
+
         Ok(Task {
             title: processed_titled,
             description: reservation.get_description()?,
             due_date,
             assigned_to,
+            labels,
         })
     }
 
@@ -58,7 +67,7 @@ impl Task {
             self.due_date.resolve(reservation),
             Some(self.description.clone()),
             self.assigned_to.clone(),
-            vec!["airbnb".to_string()],
+            self.labels.clone(),
         )
     }
 }
