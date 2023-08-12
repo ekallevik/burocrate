@@ -68,7 +68,7 @@ impl TodoistTask {
         description: Option<String>,
         priority: Option<i32>,
         assignee: Option<String>,
-        labels: Vec<String>
+        labels: Vec<String>,
     ) -> TodoistTask {
         TodoistTask {
             id: None,

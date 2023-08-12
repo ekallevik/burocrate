@@ -1,12 +1,11 @@
-use std::fmt::{Display, Formatter};
 use crate::reservation::Reservation;
 use crate::todoist::TodoistTask;
 use anyhow::Result;
 use chrono::{Days, NaiveDate, Utc};
-
+use std::fmt::{Display, Formatter};
 
 pub struct Task {
-    name: String,
+    title: String,
     description: String,
     due_date: RelativeDate,
     assigned_to: Option<String>,
@@ -15,27 +14,31 @@ pub struct Task {
 impl Display for Task {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match &self.assigned_to {
-            None => write!(f, "Task: '{}' due on {}", self.name, self.due_date),
-            Some(assignee) => write!(f, "Task: '{}' due on {} and assigned to {}", self.name, self.due_date, assignee),
+            None => write!(f, "Task: '{}' due on {}", self.title, self.due_date),
+            Some(assignee) => write!(
+                f,
+                "Task: '{}' due on {} and assigned to {}",
+                self.title, self.due_date, assignee
+            ),
         }
     }
 }
 
 impl Task {
     pub fn new(
-        name: &str,
+        title: &str,
         reservation: &Reservation,
         due_date: RelativeDate,
         assigned_to: Option<String>,
         appendix: bool,
     ) -> Result<Self> {
-        let title = match appendix {
-            false => name.to_string(),
-            true => format!("{} - {}", name, reservation.guest)
+        let processed_titled = match appendix {
+            false => title.to_string(),
+            true => format!("{} - {}", title, reservation.guest),
         };
 
         Ok(Task {
-            name: title,
+            title: processed_titled,
             description: reservation.get_description()?,
             due_date,
             assigned_to,
@@ -51,7 +54,7 @@ impl Task {
         TodoistTask::new(
             parent_task_id,
             project_id,
-            &(self.name.clone() + " for " + &reservation.guest),
+            &(self.title.clone() + " for " + &reservation.guest),
             self.due_date.resolve(reservation),
             Some(self.description.clone()),
             None,
