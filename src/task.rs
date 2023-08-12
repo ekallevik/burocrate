@@ -57,13 +57,13 @@ impl Task {
             &(self.title.clone() + " for " + &reservation.guest),
             self.due_date.resolve(reservation),
             Some(self.description.clone()),
-            None,
             self.assigned_to.clone(),
             vec!["airbnb".to_string()],
         )
     }
 }
 
+#[allow(dead_code)]
 pub enum RelativeDate {
     Immediately,
     BeforeCheckIn(Days),
