@@ -46,6 +46,7 @@ fn run_process() -> Result<()> {
             &res,
             RelativeDate::AfterCheckout(Days::new(3)),
             None,
+            None,
             false,
         )?;
         let sub_tasks = get_sub_tasks(&res)?;
@@ -77,6 +78,7 @@ fn get_sub_tasks(reservation: &Reservation) -> Result<Vec<Task>> {
             reservation,
             RelativeDate::Immediately,
             None,
+            Some("vaskehjelp"),
             true,
         ),
         Task::new(
@@ -84,6 +86,7 @@ fn get_sub_tasks(reservation: &Reservation) -> Result<Vec<Task>> {
             reservation,
             RelativeDate::Immediately,
             Some(alice_id),
+            Some("overnatting"),
             true,
         ),
         Task::new(
@@ -91,6 +94,7 @@ fn get_sub_tasks(reservation: &Reservation) -> Result<Vec<Task>> {
             reservation,
             RelativeDate::Immediately,
             Some(bob_id),
+            Some("overnatting"),
             true,
         ),
         Task::new(
@@ -98,12 +102,14 @@ fn get_sub_tasks(reservation: &Reservation) -> Result<Vec<Task>> {
             reservation,
             RelativeDate::BeforeCheckIn(Days::new(3)),
             None,
+            Some("yale"),
             true,
         ),
         Task::new(
             "Klargjør leiligheten",
             reservation,
             RelativeDate::BeforeCheckIn(Days::new(1)),
+            None,
             None,
             true,
         ),
@@ -112,6 +118,7 @@ fn get_sub_tasks(reservation: &Reservation) -> Result<Vec<Task>> {
             reservation,
             RelativeDate::BeforeCheckIn(Days::new(1)),
             None,
+            None,
             true,
         ),
         Task::new(
@@ -119,12 +126,14 @@ fn get_sub_tasks(reservation: &Reservation) -> Result<Vec<Task>> {
             reservation,
             RelativeDate::AfterCheckout(Days::new(2)),
             None,
+            Some("yale"),
             true,
         ),
         Task::new(
             "Følg opp anmeldelse",
             reservation,
             RelativeDate::AfterCheckout(Days::new(3)),
+            None,
             None,
             true,
         ),
