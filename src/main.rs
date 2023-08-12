@@ -14,7 +14,6 @@ mod task;
 mod todoist;
 
 fn main() {
-
     let mut scheduler = Scheduler::new();
     scheduler.every(15.minutes()).run(|| {
         println!("\n\n --- Time: {} ---", Utc::now());
@@ -29,7 +28,6 @@ fn main() {
 }
 
 fn run_process() -> Result<()> {
-
     let todoist = TodoistClient::new();
     let todoist_project_id = env::var("TODOIST_PROJECT_ID").expect("TODOIST_PROJECT_ID is not set");
     let parsio = ParsioClient::new();
@@ -44,7 +42,7 @@ fn run_process() -> Result<()> {
     println!("Got {} reservations", reservations.len());
     for res in reservations {
         let parent_task = Task::new(
-            &format!("Booking fra {}", res.check_in.format("%-d. %b")), // todo: improve this...
+            &format!("{} - {}", res.guest, res.get_duration()),
             &res,
             RelativeDate::AfterCheckout(Days::new(3)),
             None,
