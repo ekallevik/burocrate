@@ -63,7 +63,7 @@ impl Task {
         TodoistTask::new(
             parent_task_id,
             project_id,
-            &(self.title.clone() + " for " + &reservation.guest),
+            &self.title,
             self.due_date.resolve(reservation),
             Some(self.description.clone()),
             self.assigned_to.clone(),
