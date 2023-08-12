@@ -4,7 +4,7 @@ use crate::task::{RelativeDate, Task};
 use crate::todoist::TodoistClient;
 use anyhow::{bail, Result};
 use chrono::{Days, Utc};
-use clokwerk::{Job, Scheduler, TimeUnits};
+use clokwerk::{Scheduler, TimeUnits};
 use std::time::Duration;
 use std::{env, thread};
 
@@ -74,56 +74,56 @@ fn get_sub_tasks(reservation: &Reservation) -> Result<Vec<Task>> {
     let subtasks = vec![
         Task::new(
             "Bestill vaskehjelp",
-            &reservation,
+            reservation,
             RelativeDate::Immediately,
             None,
             true,
         ),
         Task::new(
             "Fiks egen overnatting",
-            &reservation,
+            reservation,
             RelativeDate::Immediately,
             Some(alice_id),
             true,
         ),
         Task::new(
             "Fiks egen overnatting",
-            &reservation,
+            reservation,
             RelativeDate::Immediately,
             Some(bob_id),
             true,
         ),
         Task::new(
             "Opprett dørkode",
-            &reservation,
+            reservation,
             RelativeDate::BeforeCheckIn(Days::new(3)),
             None,
             true,
         ),
         Task::new(
             "Klargjør leiligheten",
-            &reservation,
+            reservation,
             RelativeDate::BeforeCheckIn(Days::new(1)),
             None,
             true,
         ),
         Task::new(
             "Send velkomstmelding",
-            &reservation,
+            reservation,
             RelativeDate::BeforeCheckIn(Days::new(1)),
             None,
             true,
         ),
         Task::new(
             "Slett dørkode",
-            &reservation,
+            reservation,
             RelativeDate::AfterCheckout(Days::new(2)),
             None,
             true,
         ),
         Task::new(
             "Følg opp anmeldelse",
-            &reservation,
+            reservation,
             RelativeDate::AfterCheckout(Days::new(3)),
             None,
             true,
