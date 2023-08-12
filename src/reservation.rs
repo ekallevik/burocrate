@@ -18,9 +18,9 @@ pub struct Reservation {
 impl Reservation {
     pub fn get_description(&self) -> Result<String> {
         let mut builder = Builder::default();
+        builder.append(format!("- **Gjester**: {}\n", &self.number_of_guests));
         builder.append(format!("- **Innsjekk**: {}\n", &self.check_in));
         builder.append(format!("- **Utsjekk**: {}\n", &self.checkout));
-        builder.append(format!("- **Gjester**: {}\n", &self.number_of_guests));
         builder.append(format!("- **Bosted**: {}\n", &self.origin));
         builder.append(format!("- **Payout**: {}\n", &self.host_payout));
         builder.append(format!("- **Confirmation**: {}\n", &self.confirmation_code));
