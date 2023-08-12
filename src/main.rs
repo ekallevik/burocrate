@@ -1,4 +1,5 @@
 use crate::parsio::ParsioClient;
+use crate::reservation::Reservation;
 use crate::task::{RelativeDate, Task};
 use crate::todoist::TodoistClient;
 use anyhow::{bail, Result};
@@ -6,7 +7,6 @@ use chrono::{Days, Utc};
 use clokwerk::{Job, Scheduler, TimeUnits};
 use std::time::Duration;
 use std::{env, thread};
-use crate::reservation::Reservation;
 
 mod parsio;
 mod reservation;
@@ -43,14 +43,14 @@ fn run_process() -> Result<()> {
 
     println!("Got {} reservations", reservations.len());
     for res in reservations {
-        let description = res.get_description()?;
         let parent_task = Task::new(
-            &format!("Booking fra {}", res.check_in.format("%-d. %b")),
-            &description,
+            &format!("Booking fra {}", res.check_in.format("%-d. %b")), // todo: improve this...
+            &res,
             RelativeDate::AfterCheckout(Days::new(3)),
             None,
-        );
-        let sub_tasks = get_sub_tasks(&description);
+            false,
+        )?;
+        let sub_tasks = get_sub_tasks(&res)?;
 
         let todoist_parent_task = parent_task.to_todoist(&res, None, &todoist_project_id);
 
@@ -69,58 +69,68 @@ fn run_process() -> Result<()> {
     Ok(())
 }
 
-fn get_sub_tasks(description: &str) -> Vec<Task> {
+fn get_sub_tasks(reservation: &Reservation) -> Result<Vec<Task>> {
     let alice_id = env::var("TODOIST_ID_ALICE").expect("TODOIST_ID_ALICE is not set");
     let bob_id = env::var("TODOIST_ID_BOB").expect("TODOIST_ID_BOB is not set");
 
-    vec![
+    let subtasks = vec![
         Task::new(
             "Bestill vaskehjelp",
-            &description,
+            &reservation,
             RelativeDate::Immediately,
             None,
+            true,
         ),
         Task::new(
             "Fiks egen overnatting",
-            &description,
+            &reservation,
             RelativeDate::Immediately,
             Some(alice_id),
+            true,
         ),
         Task::new(
             "Fiks egen overnatting",
-            &description,
+            &reservation,
             RelativeDate::Immediately,
             Some(bob_id),
+            true,
         ),
         Task::new(
             "Opprett dørkode",
-            &description,
+            &reservation,
             RelativeDate::BeforeCheckIn(Days::new(3)),
             None,
+            true,
         ),
         Task::new(
             "Klargjør leiligheten",
-            &description,
+            &reservation,
             RelativeDate::BeforeCheckIn(Days::new(1)),
             None,
+            true,
         ),
         Task::new(
             "Send velkomstmelding",
-            &description,
+            &reservation,
             RelativeDate::BeforeCheckIn(Days::new(1)),
             None,
+            true,
         ),
         Task::new(
             "Slett dørkode",
-            &description,
+            &reservation,
             RelativeDate::AfterCheckout(Days::new(2)),
             None,
+            true,
         ),
         Task::new(
             "Følg opp anmeldelse",
-            &description,
+            &reservation,
             RelativeDate::AfterCheckout(Days::new(3)),
             None,
+            true,
         ),
-    ]
+    ];
+
+    subtasks.into_iter().collect()
 }

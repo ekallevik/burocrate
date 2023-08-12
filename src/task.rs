@@ -1,7 +1,9 @@
 use std::fmt::{Display, Formatter};
 use crate::reservation::Reservation;
 use crate::todoist::TodoistTask;
+use anyhow::Result;
 use chrono::{Days, NaiveDate, Utc};
+
 
 pub struct Task {
     name: String,
@@ -22,16 +24,22 @@ impl Display for Task {
 impl Task {
     pub fn new(
         name: &str,
-        description: &str,
+        reservation: &Reservation,
         due_date: RelativeDate,
         assigned_to: Option<String>,
-    ) -> Self {
-        Task {
-            name: name.to_string(),
-            description: description.to_string(),
+        appendix: bool,
+    ) -> Result<Self> {
+        let title = match appendix {
+            false => name.to_string(),
+            true => format!("{} - {}", name, reservation.guest)
+        };
+
+        Ok(Task {
+            name: title,
+            description: reservation.get_description()?,
             due_date,
             assigned_to,
-        }
+        })
     }
 
     pub fn to_todoist(
@@ -48,7 +56,7 @@ impl Task {
             Some(self.description.clone()),
             None,
             self.assigned_to.clone(),
-            vec!["airbnb".to_string()]
+            vec!["airbnb".to_string()],
         )
     }
 }
